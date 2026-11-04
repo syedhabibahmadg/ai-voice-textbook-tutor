@@ -10,6 +10,18 @@ React Native (Expo) Android app + FastAPI backend for textbook-grounded voice le
 
 **Status:** Initial scaffold only. AI, speech and ingestion features are not implemented yet.
 
+## Textbook dataset (Google Drive)
+
+Textbook PDFs and source materials are organized outside this GitHub repository in Google Drive:
+
+- **[Text Books — main folder](https://drive.google.com/drive/folders/1_3AwlceIQ_g4VdSaiWabV06FSsc7kZpb)**
+- [Class 9 textbooks](https://drive.google.com/drive/folders/1ynidp9ReLel6jq18dQCvDmJkblkKsRus)
+- [Class 10 textbooks](https://drive.google.com/drive/folders/1SMq2rIaQvwJnVkm2qAE_u43xpohUESKY)
+- [Class 11 textbooks](https://drive.google.com/drive/folders/1c-Xeodvz8AjGJ3bNLkIckr8q7hlLbgmy)
+- [Class 12 textbooks](https://drive.google.com/drive/folders/1yabYFVWi128gVuBU9Qr3Lhom2V9cyr51)
+
+Upload authorized textbooks to their respective class folders. Folder access depends on Google Drive sharing permissions; these links do not automatically grant access. Avoid committing copyrighted textbook files to GitHub.
+
 ## Project structure
 - `mobile/` — React Native + Expo starter UI
 - `backend/` — FastAPI health-check service
