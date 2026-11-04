@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+*.sqlite3
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+*.iml
+.idea/
+.vscode/
+android/local.properties
+android/key.properties
+*.jks
+*.keystore
+ios/Pods/
+# Data and secrets
+data/raw/
+data/processed/
+*.pdf
+*.db
+*.log
+.DS_Store
