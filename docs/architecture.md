@@ -1,6 +1,6 @@
 # Architecture (proposed)
 
-Flutter mobile app -> FastAPI REST API -> textbook-grounded RAG services.
+React Native (Expo) mobile app -> FastAPI REST API -> textbook-grounded RAG services.
 
 The ingestion worker will process authorized textbooks into chapter-tagged chunks. Retrieval will filter by class, subject, book and chapter. An LLM will answer from retrieved evidence and return citations. Speech recognition and speech synthesis will be added as independent services.
 
@@ -12,4 +12,4 @@ The ingestion worker will process authorized textbooks into chapter-tagged chunk
 5. Show clear fallback when the textbook lacks the answer.
 
 ## Current status
-Only scaffold and health check are implemented.
+Only mobile starter screen and backend health check are implemented.
