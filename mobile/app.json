@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "AI Voice Textbook Tutor",
+    "slug": "ai-voice-textbook-tutor",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.gillanigames.voicetextbooktutor"
+    }
+  }
+}
