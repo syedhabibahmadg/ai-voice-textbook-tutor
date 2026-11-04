@@ -8,23 +8,22 @@ venv/
 .env.*
 !.env.example
 *.sqlite3
-# Flutter/Dart
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-.pub-cache/
-.pub/
-build/
-coverage/
-*.iml
-.idea/
-.vscode/
-android/local.properties
-android/key.properties
+
+# React Native / Expo
+node_modules/
+.expo/
+dist/
+web-build/
+android/
+ios/
 *.jks
 *.keystore
-ios/Pods/
+npm-debug.log*
+yarn-error.log*
+coverage/
+.idea/
+.vscode/
+
 # Data and secrets
 data/raw/
 data/processed/
