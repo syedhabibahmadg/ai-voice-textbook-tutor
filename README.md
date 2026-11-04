@@ -1,6 +1,6 @@
 # AI Voice-Based Textbook Learning Assistant
 
-Flutter Android app + FastAPI backend for textbook-grounded voice learning for Classes 9–12.
+React Native (Expo) Android app + FastAPI backend for textbook-grounded voice learning for Classes 9–12.
 
 ## Planned features
 - Class, subject, textbook and chapter selection
@@ -11,12 +11,12 @@ Flutter Android app + FastAPI backend for textbook-grounded voice learning for C
 **Status:** Initial scaffold only. AI, speech and ingestion features are not implemented yet.
 
 ## Project structure
-- `mobile/` — Flutter starter UI
+- `mobile/` — React Native + Expo starter UI
 - `backend/` — FastAPI health-check service
 - `rag/` — planned retrieval and ingestion pipeline
 - `docs/` — architecture notes
 - `tests/` — API tests
-- `.github/workflows/ci.yml` — basic CI
+- `.github/workflows/ci.yml` — backend and mobile CI
 
 ## Backend setup
 ```bash
@@ -27,12 +27,13 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-## Flutter setup
+## Mobile setup
+Install Node.js LTS, then:
 ```bash
 cd mobile
-flutter create --project-name voice_textbook_tutor .
-flutter pub get
-flutter run
+npm install
+npx expo start
 ```
+Run on Android with Expo Go or an emulator. This is a starter screen, not a connected AI tutor.
 
 Do not commit API keys, student data or unauthorized textbook PDFs.
