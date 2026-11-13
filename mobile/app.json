@@ -5,6 +5,7 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "plugins": [["expo-audio", {"microphonePermission": "Allow Textbook Tutor to record a question on this device."}]],
     "android": {
       "package": "com.gillanigames.voicetextbooktutor"
     }

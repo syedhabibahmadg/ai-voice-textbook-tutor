@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt
-      - run: PYTHONPATH=. pytest ../tests -q
+      - run: PYTHONPATH=..:. pytest ../tests -q
 
   mobile:
     runs-on: ubuntu-latest
