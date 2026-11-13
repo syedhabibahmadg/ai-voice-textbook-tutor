@@ -3,15 +3,19 @@ import re
 import os
 import math
 from collections import Counter
+from contextlib import closing
 from rag.ingest import connect, MANIFEST
 
 def books():
-    with connect() as db:
+    with closing(connect()) as db:
         indexed = {r['id']: json.loads(r['metadata']) for r in db.execute('SELECT * FROM books')}
     return [indexed.get(b['id'], b) for b in json.loads(MANIFEST.read_text(encoding='utf8'))]
 
-STOP = set('what is are the a an of in explain how why does do and to it'.split())
+STOP = set('what is are the a an of in explain how why does do and to it kya hai hain ka ki ke ko mujhe samjhao'.split())
 def tokens(text):
+    for phrase in ['آئنائزیشن انرجی','آئنائزیشن توانائی','آئنائزیشن کی توانائی']:
+        text=text.replace(phrase,'ionization energy')
+    text=re.sub(r'(?i)ionisation','ionization',text)
     return set(re.findall(r'\w+', text.lower())) - STOP
 
 def search(query, book_id, chapter=None, limit=5):
@@ -20,7 +24,7 @@ def search(query, book_id, chapter=None, limit=5):
         return semantic_search(query, book_id, chapter, limit)
     # Unicode lexical fallback works without keys, model downloads or paid services.
     terms = tokens(query)
-    with connect() as db:
+    with closing(connect()) as db:
         sql = 'SELECT * FROM chunks WHERE book_id=?'
         params = [book_id]
         if chapter is not None:

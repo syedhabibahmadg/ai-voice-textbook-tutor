@@ -29,6 +29,11 @@ data/raw/
 data/processed/
 *.part
 *.download
+.private/
+*.apk
+credentials.json
+local.properties
+data/logs/
 *.pdf
 *.db
 *.log

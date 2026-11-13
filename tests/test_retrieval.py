@@ -10,6 +10,7 @@ def corpus(tmp_path, monkeypatch):
     monkeypatch.setattr(ingest, 'DATA', tmp_path / 'index')
     monkeypatch.delenv('TUTOR_EMBED_MODEL', raising=False)
     monkeypatch.delenv('TUTOR_LLM_MODEL', raising=False)
+    monkeypatch.setenv('AI_PROVIDER','extractive')
     books = json.loads(ingest.MANIFEST.read_text())
     for grade, subject, text in [(11,'Chemistry','Chapter 1\nIonization energy is the energy required to remove an electron from a gaseous atom.'),(9,'Computer','Chapter 1\nA computer processes data using hardware and software.')]:
         book = next(b for b in books if b['grade']==grade and b['subject']==subject)

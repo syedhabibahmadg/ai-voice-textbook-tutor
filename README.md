@@ -1,98 +1,64 @@
-# Windows development setup
+# AI Voice Textbook Tutor
 
-From the repository root in PowerShell (Python 3.10+ and Node 22):
+React Native + Expo SDK 54 Android app and a Windows-hosted FastAPI textbook server. Continue on `feat/android-textbook-prototype`.
+
+## Windows server
+
+Run `setup_server.bat` once, then `start_server.bat`. Setup prefers Python 3.11, creates `.venv`, installs backend dependencies and creates a backend-only `.env`. Start prints the laptop LAN URL and listens on port 8000; it does not reinstall packages or download models. Authorized textbooks and indexes remain under local `data/`.
+
+For Groq, edit `backend/.env` locally, set `GROQ_API_KEY`, and run:
 
 ```powershell
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r backend/requirements.txt
-$env:PYTHONPATH=".;backend"
-python -m rag.ingest --pdf-dir data/raw
-python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+.venv\Scripts\python -m backend.app.ai_models
 ```
 
-Put authorized PDFs in `data/raw/<Drive file ID>.pdf`. `rag/manifest.json` contains the discovered grade/subject assignments. Ingestion does not require the mobile app. Downloads must finish before ingestion; use a temporary extension and atomic rename. Never commit PDFs, models, tokens or `data/processed`.
+Choose a returned production chat model as `GROQ_MODEL`; use `AI_PROVIDER=groq` or `auto`. `AI_PROVIDER=extractive` works without a paid key. `ollama` uses a caller-provisioned model only. Never put keys in the APK, source, or an EXPO_PUBLIC variable. No real Groq inference is claimed without a configured key and successful request.
 
-In another PowerShell terminal:
+## Android app
+
+Install the standalone APK when listed in the build evidence. Expo Go and Metro are not needed for a release APK. Open Settings, enter the URL printed by the laptop launcher, and tap **Test connection and save**. Every request uses that per-device saved URL. Reconnect/change IP without rebuilding. Keep devices on trusted Wi-Fi and allow port 8000 only on a Private Windows network.
+
+Choose Class 11 -> Chemistry -> Chapter 1 and ask “What is ionization energy?” The validated extractive definition references **original PDF page 12**. Class 12 English is partially indexed. Unindexed books show **Not ready** and cannot be selected. Citations are backend-owned chunk/page metadata; generated source IDs and supporting quotes are checked against retrieved evidence. Such validation is not a complete semantic entailment guarantee.
+
+Groq audio transcription uploads go through the laptop, with bounded type/size/duration checks and temporary file cleanup. Review/edit the transcript before submitting. A configured Groq key and FFmpeg/ffprobe are required. English/Urdu recognition quality must be evaluated; no real recognition is claimed from mock tests. Device TTS requires an installed compatible voice and supports sentence-level pause/resume/replay independently of the AI provider.
+
+See [Android build/install](docs/ANDROID_APK_SETUP.md), [Windows/Groq setup](docs/WINDOWS_SERVER_SETUP.md), [LAN troubleshooting](docs/NETWORK_TROUBLESHOOTING.md), [verified progress](docs/progress.md), and [remaining tasks](docs/NEXT_STEPS.md).
+
+## Developer validation
 
 ```powershell
+$env:PYTHONPATH=".;backend"
+.venv\Scripts\python -m pytest tests -q
+.venv\Scripts\python tests/smoke_live.py
 cd mobile
 npm ci --legacy-peer-deps
-npx expo start
 npm run typecheck
+cd ..
+.venv\Scripts\python scripts/build_apk.py
 ```
 
-Use Settings to enter `http://YOUR_PC_LAN_IP:8000` for a physical device; Android emulator default is `http://10.0.2.2:8000`. Local HTTP is development only. Production requires HTTPS and an appropriate network policy. Audio recording and device TTS need device testing; recordings stay in the device cache and are never uploaded.
+The build script generates an ignored private preview signing key under `.private`. Back it up securely for APK updates. It builds a standalone signed release APK, not an AAB or Expo Go client. The EAS preview alternative is configured in `mobile/eas.json` but requires EAS login. LAN HTTP is enabled only in preview configuration; production disables cleartext and requires HTTPS.
+
+## Textbook ingestion
+
+31 whole-book candidates and 22 Urdu chapter fragments are inventoried in `rag/manifest.json` and `rag/source-fragments.json`. **Two books currently contain searchable chunks:** Chemistry 11 (344 pages/828 chunks) and partial English 12 (498 chunks). Urdu 9 has 144 scanned pages queued for OCR, not searchable text. Remaining sources are awaiting completed downloads. `docs/INGESTION_STATUS.json` is a snapshot; the runtime catalog overlays local index status.
+
+Authorized local PDFs use `data/raw/<Drive ID>.pdf`. Ingestion is independent of the app:
 
 ```powershell
-$env:PYTHONPATH=".;backend"
-python -m pytest tests -q
+.venv\Scripts\python -m rag.ingest --pdf-dir data/raw
 ```
 
-## Retrieval and ingestion
+Extraction caches per source/config hash, skips unchanged books, rejects wrong-size downloads, preserves PDF page numbers, queues scans, and atomically replaces book chunks. Chemistry chapter starts were reviewed against the PDF contents. Other chapter mappings are inferred and need review. Optional Tesseract OCR uses already-installed language data via `TUTOR_OCR_LANG`; Urdu language data is not provisioned automatically.
 
-All catalog lists come from manifest/index metadata. The default mode is Unicode lexical BM25-style retrieval and verbatim evidence, with a conservative term-overlap threshold. No LLM or paid key is required. It does not translate Roman Urdu. Absence of a hit returns an abstention; lexical matching is not a factual confidence guarantee. Pages are **original PDF page numbers**, not printed page labels. Unassigned chapter content is explicitly labeled. Inferred chapter boundaries require manual review.
-
-Extraction uses PyMuPDF, cached per file hash plus extraction configuration, overlapping word chunks, transactional per-book replacement, stable IDs, and a resumable ingestion report. It skips image-only pages by default. Install Tesseract and its language data yourself, then set `$env:TUTOR_OCR_LANG="urd+eng"` to opt in. No OCR or LLM weights are downloaded automatically. Font-encoded text can still need OCR/manual repair even when selectable.
-
-Optional semantic retrieval (separate from default working lexical mode):
-
-```powershell
-python -m pip install -r backend/requirements-rag.txt
-# Provision a free multilingual sentence-transformers model yourself, e.g.
-# paraphrase-multilingual-MiniLM-L12-v2. Point to its local directory:
-$env:TUTOR_EMBED_MODEL="C:\models\multilingual-minilm"
-python -m rag.vectors
-```
-
-This indexes local-only embeddings in ChromaDB with cached embeddings and strict book/chapter filters. Re-run vectors after ingestion changes. Set `TUTOR_MAX_DISTANCE` after evaluating a multilingual test set. The semantic path is optional and must not be claimed validated without provisioned model weights.
-
-Optional local LLM: provision Ollama and a model yourself, then set `TUTOR_LLM_MODEL` and optionally `TUTOR_LLM_URL`. LangChain passes only retrieved passages to it. Generated wording still needs groundedness evaluation. Unset the model variable for extractive mode. STT/TTS backend endpoints return explicit 501 until a provider is implemented; mobile device TTS works independently. No quiz, authentication, student progress, rate limiting or production deployment is claimed.
-
-See `docs/NEXT_STEPS.md` for the checkpoint and remaining validation.
-
-Repeatable Drive discovery/download (optional; supply an authorized short-lived OAuth token with drive.readonly scope):
+Repeatable paginated Drive import requires a caller-supplied short-lived OAuth token with read access:
 
 ```powershell
 $env:GOOGLE_DRIVE_ACCESS_TOKEN="YOUR_SHORT_LIVED_TOKEN"
-python -m rag.drive --root 1_3AwlceIQ_g4VdSaiWabV06FSsc7kZpb --download-dir data/raw
+.venv\Scripts\python -m rag.drive --root 1_3AwlceIQ_g4VdSaiWabV06FSsc7kZpb --download-dir data/raw
 Remove-Item Env:GOOGLE_DRIVE_ACCESS_TOKEN
-python -m rag.ingest --pdf-dir data/raw
 ```
 
-The Drive CLI paginates folders, preserves reviewed subject/chapter overrides, validates sizes/checksums, downloads atomically, and skips unchanged PDFs. Review discovered subjects before indexing chapter-fragment subfolders. Folder access is respected; failed downloads are reported without credential-bearing URLs.
+Optional semantic retrieval uses `backend/requirements-rag.txt`, caller-provisioned local multilingual sentence-transformers weights, `TUTOR_EMBED_MODEL`, and `python -m rag.vectors`. ChromaDB embeddings are batched/cached and filtered by book/chapter. The default lexical retrieval path remains available; a small bilingual technical glossary is not general Urdu translation. No model weights, PDFs, vector databases, secrets or signing credentials are committed.
 
-## Open this prototype on an Android phone
-
-Use Expo Go **for SDK 54**, downloaded from https://expo.dev/go?device=true&platform=android&sdkVersion=54 (a newer Play Store Expo Go may not open an older SDK project). This repository preserves its existing SDK rather than doing an unrelated major upgrade.
-
-Start backend from the repository root:
-
-```powershell
-python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
-```
-
-Then in a second terminal:
-
-```powershell
-cd mobile
-npm ci --legacy-peer-deps
-npx expo start --lan
-```
-
-Keep phone and PC on the same Wi-Fi. Scan Metro's QR code in the compatible Expo Go app. The backend defaults to the Expo development host on port 8000. If needed, Settings accepts `http://YOUR_PC_WIFI_IP:8000`, or set `$env:EXPO_PUBLIC_API_URL="http://YOUR_PC_WIFI_IP:8000"` before starting Expo. Test that `/health` opens from the phone's browser first. Allow the Python/Node Windows Firewall prompts on your trusted private network. Guest Wi-Fi client isolation may require a different network; Expo tunnel alone does not expose the backend.
-
-Select Class 11 -> Chemistry -> Chemistry.pdf -> Chapter 1, then ask `What is ionization energy?`. Expect textbook evidence with original PDF page **12**. Other discovered books may show no indexed chapters until ingestion completes. Original PDF pages differ from printed page labels.
-
-Additional validation commands from repository root:
-
-```powershell
-$env:PYTHONPATH=".;backend"
-python -m pytest tests -q
-python tests/smoke_live.py
-cd mobile
-npm run typecheck
-npx expo export --platform android --output-dir ../data/processed/android-bundle
-```
-
-A successful JS/Hermes export is not an APK or proof of physical Android execution. See docs/progress.md for the exact verified/pending boundary.
+This is a prototype. Quizzes, summaries, student history/progress, full-corpus OCR, robust multilingual evaluations, authentication, public deployment and production hardening remain outside the verified checkpoint.

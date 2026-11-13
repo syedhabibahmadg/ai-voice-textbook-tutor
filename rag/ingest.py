@@ -14,7 +14,7 @@ MANIFEST = ROOT / 'rag/manifest.json'
 
 def connect():
     DATA.mkdir(parents=True, exist_ok=True)
-    db = sqlite3.connect(DATA / 'catalog.sqlite3')
+    db = sqlite3.connect(DATA / 'catalog.sqlite3', timeout=15)
     db.row_factory = sqlite3.Row
     db.executescript('''CREATE TABLE IF NOT EXISTS books(id TEXT PRIMARY KEY, metadata TEXT, fingerprint TEXT);
     CREATE TABLE IF NOT EXISTS chunks(id TEXT PRIMARY KEY, book_id TEXT, chapter TEXT, page INTEGER, text TEXT);
