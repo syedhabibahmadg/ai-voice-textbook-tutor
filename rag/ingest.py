@@ -5,6 +5,7 @@ import json
 import os
 import re
 import sqlite3
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 import fitz
 
@@ -21,20 +22,29 @@ def connect():
     CREATE INDEX IF NOT EXISTS chunk_book ON chunks(book_id, chapter);''')
     return db
 
+def _ocr_page(task):
+    path, index, language, dpi = task
+    with fitz.open(path) as doc:
+        page=doc[index]
+        return index,page.get_text(textpage=page.get_textpage_ocr(language=language,dpi=dpi,full=True))
+
 def extract(path, book):
     doc = fitz.open(path)
     pages, scanned = [], []
+    raw=[page.get_text('text',sort=False) for page in doc]
+    scanned=[i+1 for i,text in enumerate(raw) if len(re.sub(r'\s','',text))<40]
+    if os.getenv('TUTOR_OCR_LANG') and scanned:
+        workers=max(1,min(4,int(os.getenv('TUTOR_OCR_WORKERS','4'))))
+        tasks=[(str(path),i-1,os.environ['TUTOR_OCR_LANG'],180) for i in scanned]
+        print(f'OCR: {len(tasks)} pages at 180 DPI, {workers} workers',flush=True)
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            for index,text in pool.map(_ocr_page,tasks):raw[index]=text
     toc = [(page, str(number)) for number, (_, title, page) in enumerate(doc.get_toc(), 1)]
     if book.get('chapter_starts'):
         toc = [(page, str(i)) for i, page in enumerate(book['chapter_starts'], 1)]
     chapter = 'unassigned'
     for number, page in enumerate(doc, 1):
-        text = page.get_text('text', sort=False)
-        if len(re.sub(r'\s', '', text)) < 40:
-            scanned.append(number)
-            # OCR is opt-in and uses installed Tesseract language data only.
-            if os.getenv('TUTOR_OCR_LANG'):
-                text = page.get_text(textpage=page.get_textpage_ocr(language=os.environ['TUTOR_OCR_LANG']))
+        text = raw[number-1]
         for start, ch in toc:
             if start == number:
                 chapter = ch
@@ -56,7 +66,7 @@ def extract(path, book):
 def ingest(path, book):
     if book.get('size') and path.stat().st_size != book['size']:
         raise ValueError('Incomplete PDF download; size differs from Drive metadata')
-    fingerprint = hashlib.sha256(path.read_bytes() + b'extraction-v4' + json.dumps(book.get('chapter_starts')).encode() + os.getenv('TUTOR_OCR_LANG','').encode()).hexdigest()
+    fingerprint = hashlib.sha256(path.read_bytes() + b'extraction-v5-full-ocr-180dpi' + json.dumps(book.get('chapter_starts')).encode() + os.getenv('TUTOR_OCR_LANG','').encode()).hexdigest()
     db = connect()
     old = db.execute('SELECT fingerprint FROM books WHERE id=?', (book['id'],)).fetchone()
     if old and old[0] == fingerprint:
@@ -89,9 +99,13 @@ def ingest(path, book):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--pdf-dir', type=Path, required=True, help='PDFs named <Drive file ID>.pdf')
+    parser.add_argument('--grade',type=int,choices=[9,10,11,12])
+    parser.add_argument('--subjects',nargs='+')
     args = parser.parse_args()
     report = []
     for book in json.loads(MANIFEST.read_text(encoding='utf8')):
+        if args.grade and book['grade']!=args.grade:continue
+        if args.subjects and book['subject'] not in args.subjects:continue
         path = args.pdf_dir / (book['id'] + '.pdf')
         try:
             status = ingest(path, book) if path.exists() else 'awaiting_download'

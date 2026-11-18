@@ -39,3 +39,23 @@ def test_other_grade_subject(corpus):
     book=next(b for b in books if b['grade']==9 and b['subject']=='Computer')
     result=client.post('/api/v1/chat',json={'grade':9,'subject':'Computer','textbook':book['id'],'chapter':'1','query':'computer hardware'}).json()
     assert result['grounded'] and all(c['book_id']==book['id'] for c in result['citations'])
+
+
+def test_whole_book_searches_other_chapters_without_crossing_books(corpus):
+    client, books = corpus
+    book = next(b for b in books if b['grade'] == 11 and b['subject'] == 'Chemistry')
+    with ingest.connect() as db:
+        db.execute('INSERT INTO chunks VALUES(?,?,?,?,?)', ('whole-book:2', book['id'], '2', 7, 'A covalent bond forms when atoms share electrons in a molecule.'))
+    query = {'grade': 11, 'subject': 'Chemistry', 'textbook': book['id'], 'chapter': None, 'query': 'covalent bond'}
+    result = client.post('/api/v1/chat', json=query).json()
+    assert result['grounded']
+    assert result['citations'][0]['page'] == 7
+    assert all(c['book_id'] == book['id'] for c in result['citations'])
+    assert not client.post('/api/v1/chat', json={**query, 'chapter': '1'}).json()['grounded']
+
+
+def test_conversational_whole_book_question(corpus):
+    client, books = corpus
+    book = next(b for b in books if b['grade'] == 11 and b['subject'] == 'Chemistry')
+    result = client.post('/api/v1/chat', json={'grade':11,'subject':'Chemistry','textbook':book['id'],'chapter':None,'query':'Can you please tell me about ionization energy?'}).json()
+    assert result['grounded'] and result['citations'][0]['page'] == 1

@@ -13,9 +13,11 @@ export function normalizeServer(value: string): string {
   return url.origin;
 }
 
-export async function requestServer(base: string, path: string, body?: unknown) {
+export async function requestServer(base: string, path: string, body?: unknown, externalSignal?:AbortSignal) {
   if (!base) throw new Error('Configure and save your laptop server address in Settings first.');
   const controller = new AbortController();
+  const onAbort=()=>controller.abort();
+  externalSignal?.addEventListener('abort',onAbort);if(externalSignal?.aborted)controller.abort();
   const timer = setTimeout(() => controller.abort(), 20000);
   try {
     const response = await fetch(base + path, {
@@ -32,15 +34,15 @@ export async function requestServer(base: string, path: string, body?: unknown) 
     if (e.name === 'AbortError') throw new Error('Connection timed out. Check that the laptop is on and both devices share the same Wi-Fi.');
     if (e instanceof TypeError) throw new Error('Cannot reach the server. Check the saved IP, port 8000, server launcher and Private-network firewall rule.');
     throw e;
-  } finally { clearTimeout(timer); }
+  } finally { clearTimeout(timer);externalSignal?.removeEventListener('abort',onAbort); }
 }
 
-export async function transcribeAudio(base: string, uri: string, language: string) {
+export async function transcribeAudio(base: string, uri: string, language: string, startSeconds=0, externalSignal?:AbortSignal) {
   if (!base) throw new Error('Configure your server first.');
   const form = new FormData();
   form.append('file', { uri, name:'question.m4a', type:'audio/mp4' } as unknown as Blob);
-  form.append('language',language);
-  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),60000);
+  form.append('language',language);form.append('start_seconds',String(startSeconds));
+  const controller=new AbortController();const onAbort=()=>controller.abort();externalSignal?.addEventListener('abort',onAbort);if(externalSignal?.aborted)controller.abort();const timer=setTimeout(()=>controller.abort(),60000);
   try {
     const response=await fetch(base+'/api/v1/speech/transcribe',{method:'POST',body:form,signal:controller.signal});
     const data=await response.json();
@@ -48,5 +50,5 @@ export async function transcribeAudio(base: string, uri: string, language: strin
     if(typeof data.text!=='string')throw new Error('Invalid transcription response.');
     return data.text as string;
   }catch(e){if((e as Error).name==='AbortError')throw new Error('Transcription timed out. Please type your question.');throw e;}
-  finally{clearTimeout(timer);}
+  finally{clearTimeout(timer);externalSignal?.removeEventListener('abort',onAbort);}
 }

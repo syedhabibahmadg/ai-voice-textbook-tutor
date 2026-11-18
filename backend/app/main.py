@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from .catalog import books, search
 from rag.ingest import connect
-from .providers import generate, status as ai_status
+from .providers import generate, retrieval_terms, status as ai_status
 from .speech import router as speech_router
 import os
 import re
@@ -60,6 +60,9 @@ def retrieve(q: Question):
         if q.history and re.search(r'(?i)\b(it|that|more|again|further|iska|is\s+ko)\b',q.query) and len(q.query.split())<12:
             retrieval_query=q.history[-1][:1000]+' '+q.query
         hits = search(retrieval_query, q.textbook, q.chapter)
+        if not hits:
+            keywords=retrieval_terms(retrieval_query)
+            if keywords: hits=search(keywords,q.textbook,q.chapter)
     except Exception:
         raise HTTPException(503, 'Retrieval provider unavailable. Check the local index and configured model.')
     return {'passages': [{**h, 'grade':book['grade'], 'subject':book['subject'], 'title': book['title'], 'source_url': f"https://drive.google.com/file/d/{q.textbook}/view#page={h['page']}"} for h in hits], 'mode': 'semantic' if os.getenv('TUTOR_EMBED_MODEL') else 'lexical'}

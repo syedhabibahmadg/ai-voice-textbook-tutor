@@ -62,3 +62,14 @@ Remove-Item Env:GOOGLE_DRIVE_ACCESS_TOKEN
 Optional semantic retrieval uses `backend/requirements-rag.txt`, caller-provisioned local multilingual sentence-transformers weights, `TUTOR_EMBED_MODEL`, and `python -m rag.vectors`. ChromaDB embeddings are batched/cached and filtered by book/chapter. The default lexical retrieval path remains available; a small bilingual technical glossary is not general Urdu translation. No model weights, PDFs, vector databases, secrets or signing credentials are committed.
 
 This is a prototype. Quizzes, summaries, student history/progress, full-corpus OCR, robust multilingual evaluations, authentication, public deployment and production hardening remain outside the verified checkpoint.
+
+### Voice conversation and Class 11 books
+Select Class 11, a subject and **Talk about the whole book**, or choose an individual chapter. Computer, English, Math and Chemistry are indexed locally (968 pages, 2,186 chunks). Other books remain marked as preparing.
+
+Tap **Tap to talk** once, ask a question and pause about one second. The tutor replies aloud and listens again. Speak during a reply to interrupt it; **Interrupt reply** also starts a new question manually. Android requests device echo cancellation, but speaker echo behavior must still be tested on a physical phone. **End conversation**, leaving the screen or backgrounding the app stops the microphone. Questions are capped at 30 seconds; 10 seconds without speech ends listening.
+
+**Text response** reveals the transcript and answer. English, Urdu and Roman Urdu preferences are in **Settings**, saved on this phone. Audio goes through the laptop to Groq. Speech output requires a compatible device voice.
+
+The server uses cached whole-book indexes, brief generated replies and reusable Groq connections. Five verified warm Groq whole-book samples took 0.67–1.05 seconds on the server; the full voice cycle also includes the silence pause, transcription and device playback. Whisper turbo and mono 16kHz capture reduce transcription overhead.
+
+To rebuild only these indexes with installed English OCR data: set `TUTOR_OCR_LANG=eng`, then run `python -m rag.ingest --pdf-dir data/raw --grade 11 --subjects Computer English Math Chemistry`. OCR uses 180 DPI and up to four workers. PDF files, indexes and credentials stay outside Git.

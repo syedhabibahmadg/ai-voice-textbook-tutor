@@ -66,3 +66,11 @@ def test_two_independent_clients(monkeypatch):
     with ThreadPoolExecutor(max_workers=2) as pool:
         results=list(pool.map(query,range(2)))
     assert all(r['provider']=='extractive' and r['citations'][0]['page']==12 for r in results)
+
+
+def test_quote_typography_does_not_reject_a_real_source():
+    evidence=[dict(id='source:1',text='Algorithms are step-by-step procedures for solving problems.')]
+    result=p.validate(json.dumps({'answer':'An algorithm solves a problem in steps.','sources':[{'id':'source:1','quote':'Algorithms are step\u2011by\u2011step procedures for solving problems.'}]}),evidence)
+    assert result['grounded'] and result['citations']==evidence
+    with pytest.raises(ValueError):
+        p.validate(json.dumps({'answer':'Unsupported','sources':[{'id':'source:1','quote':'Algorithms are random procedures for solving problems.'}]}),evidence)

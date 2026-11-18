@@ -273,10 +273,12 @@
     "grade": 11,
     "subject": "English",
     "title": "English.pdf",
-    "page_count": null,
-    "status": "awaiting_download",
+    "page_count": 168,
+    "status": "indexed",
     "modified": "2026-11-11T11:12:37.891Z",
-    "size": 44302925
+    "size": 44302925,
+    "chunk_count": 412,
+    "chapter_mapping": "inferred_needs_review"
   },
   {
     "id": "1Yp1se_CpTDfg4cYoQ3gbASnKjHc2KT0j",
@@ -326,10 +328,12 @@
     "grade": 11,
     "subject": "Math",
     "title": "Math.pdf",
-    "page_count": null,
-    "status": "awaiting_download",
+    "page_count": 312,
+    "status": "indexed",
     "modified": "2026-11-11T11:12:10.883Z",
-    "size": 28416666
+    "size": 28416666,
+    "chunk_count": 603,
+    "chapter_mapping": "inferred_needs_review"
   },
   {
     "id": "1L7T674ss-3N7HqwxAKOshLdrzX8_uABQ",
@@ -348,10 +352,12 @@
     "grade": 11,
     "subject": "Computer",
     "title": "Computer.pdf",
-    "page_count": null,
-    "status": "awaiting_download",
+    "page_count": 144,
+    "status": "indexed",
     "modified": "2026-11-11T11:11:54.392Z",
-    "size": 45862599
+    "size": 45862599,
+    "chunk_count": 343,
+    "chapter_mapping": "inferred_needs_review"
   },
   {
     "id": "1fBpxOt7Uo-DENMw4S76LaBpoCD3-bO1R",

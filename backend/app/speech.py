@@ -11,7 +11,7 @@ router=APIRouter(prefix='/api/v1/speech')
 LIMIT=20*1024*1024
 
 @router.post('/transcribe')
-def transcribe(file: UploadFile=File(...), language: str=Form('auto')):
+def transcribe(file: UploadFile=File(...), language: str=Form('auto'), start_seconds: float=Form(0,ge=0,le=120)):
     if language not in ['auto','en','ur']:
         raise HTTPException(422,'Language must be auto, en or ur')
     suffix=Path(file.filename or '').suffix.lower()
@@ -43,6 +43,13 @@ def transcribe(file: UploadFile=File(...), language: str=Form('auto')):
                     raise ValueError('Invalid audio duration')
             except Exception:
                 raise HTTPException(422,'Invalid audio or duration exceeds 120 seconds')
+            if start_seconds:
+                if start_seconds>=duration-0.05:raise HTTPException(422,'Speech start must be inside the recording')
+                if not shutil.which('ffmpeg'):raise HTTPException(503,'Speech interruption requires ffmpeg on the server PATH.')
+                clipped=Path(directory)/'speech.wav'
+                try:subprocess.run(['ffmpeg','-v','error','-ss',str(start_seconds),'-i',str(path),'-vn','-ac','1','-ar','16000',str(clipped)],capture_output=True,timeout=10,check=True)
+                except Exception:raise HTTPException(422,'Could not isolate the new spoken question')
+                path=clipped
             model=os.getenv('GROQ_STT_MODEL','whisper-large-v3')
             if model not in groq_models():
                 raise HTTPException(503,'Configured speech model is unavailable')
