@@ -74,3 +74,24 @@ def test_quote_typography_does_not_reject_a_real_source():
     assert result['grounded'] and result['citations']==evidence
     with pytest.raises(ValueError):
         p.validate(json.dumps({'answer':'Unsupported','sources':[{'id':'source:1','quote':'Algorithms are random procedures for solving problems.'}]}),evidence)
+
+
+@pytest.mark.parametrize('language',['Urdu','Roman Urdu','English'])
+def test_no_evidence_uses_selected_language_without_paid_call(monkeypatch,language):
+    monkeypatch.setattr(p,'groq_client',lambda:pytest.fail('No evidence must not call the provider'))
+    result=p.generate('Unknown question',[],language)
+    assert result['answer']==p.no_evidence_message(language)
+    assert not result['grounded']
+
+def test_urdu_provider_failure_never_reads_raw_english(monkeypatch):
+    monkeypatch.setenv('AI_PROVIDER','extractive')
+    result=p.generate('Question',EVIDENCE,'Urdu')
+    assert 'کتاب' in result['answer'] and 'Ionization' not in result['answer']
+    assert not result['grounded']
+
+def test_urdu_generated_abstention_is_localized(monkeypatch):
+    monkeypatch.setenv('AI_PROVIDER','groq')
+    monkeypatch.setattr(p,'selected_groq_model',lambda:'test-model')
+    monkeypatch.setattr(p,'groq_client',lambda:fake_groq('{"abstain":true,"answer":"No supporting evidence.","sources":[]}'))
+    result=p.generate('Question',EVIDENCE,'Urdu')
+    assert result['answer']==p.no_evidence_message('Urdu')
