@@ -30,7 +30,7 @@ try {
     if ($listener) {
         try {
             $health = Invoke-RestMethod 'http://127.0.0.1:8000/health' -TimeoutSec 3
-            if ($health.status -eq 'ok') { Write-Host 'An existing server is already listening on port 8000. No duplicate started.'; exit 0 }
+            if ($health.status -eq 'ok') { Write-Host 'Tutor server is already running. You can use the app now.'; Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -and $_.IPv4Address } | ForEach-Object { Write-Host ('Phone server URL: http://' + $_.IPv4Address.IPAddress + ':8000') }; Write-Host 'Check laptop health: http://127.0.0.1:8000/health'; exit 0 }
         } catch { }
         throw 'Port 8000 is occupied. Close the existing service or use the existing tutor server.'
     }
