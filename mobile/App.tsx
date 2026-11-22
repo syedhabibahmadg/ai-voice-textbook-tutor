@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Linking, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorderState, useAudioRecorder } from 'expo-audio';
+import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorderState, useAudioRecorder, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import * as Speech from 'expo-speech';
 import { voiceActivity } from './voiceActivity';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -59,9 +59,13 @@ export default function App() {
  },[base]);
  const recorder = useAudioRecorder({...RecordingPresets.HIGH_QUALITY,sampleRate:16000,numberOfChannels:1,bitRate:32000,isMeteringEnabled:true,android:{...RecordingPresets.HIGH_QUALITY.android,audioSource:'voice_communication'}});
  const recorderState=useAudioRecorderState(recorder,150);
+ const voicePlayer=useAudioPlayer(null);
+ const voicePlayback=useAudioPlayerStatus(voicePlayer);
+ const edgeSpeaking=useRef(false);
+ useEffect(()=>{if(voicePlayback.didJustFinish&&edgeSpeaking.current){edgeSpeaking.current=false;speakNext(speech.current.epoch);}},[voicePlayback.didJustFinish]);
  function endConversation(){
   voice.current.active=false;voice.current.monitor=false;voice.current.abort?.abort();voice.current.epoch++;setVoiceActive(false);setVoicePhase('Ready');
-  speech.current.epoch++;Speech.stop();setSpeechState('Stopped');
+  speech.current.epoch++;Speech.stop();voicePlayer.pause();edgeSpeaking.current=false;setSpeechState('Stopped');
   if(recorder.isRecording)recorder.stop().catch(()=>{});
   setRecording(false);
  }
@@ -71,7 +75,7 @@ export default function App() {
   if(!recording||!voice.current.active||voice.current.processing)return;
   const action=voiceActivity(voice.current,recorderState.metering,Date.now());
   if(action==='interrupt'){
-   speech.current.epoch++;Speech.stop();setSpeechState('Stopped');setVoicePhase('Listening');
+   speech.current.epoch++;Speech.stop();voicePlayer.pause();edgeSpeaking.current=false;setSpeechState('Stopped');setVoicePhase('Listening');
   }else if(action==='submit'){finishListeningRef.current();}
   else if(action==='timeout'){endConversation();setError('No speech detected. Tap the microphone and speak closer to your phone.');}
 
@@ -156,6 +160,15 @@ export default function App() {
  async function speakAnswer(text:string){
   const conversationEpoch=voice.current.epoch;
   await Speech.stop();speech.current.epoch++;
+  if(language==='Urdu'){
+   setVoicePhase('Understanding');
+   const audio=await api('/api/v1/speech/synthesize',{text});
+   if(!voice.current.active||conversationEpoch!==voice.current.epoch)return;
+   await startListening('Speaking');
+   if(!voice.current.active||conversationEpoch!==voice.current.epoch)return;
+   speech.current.sentences=[];speech.current.index=0;edgeSpeaking.current=true;
+   voicePlayer.replace({uri:base+audio.audio_url});voicePlayer.play();setSpeechState('Playing');return;
+  }
   const voices=await Speech.getAvailableVoicesAsync();const code=language==='Urdu'?'ur':'en';
   if(!voices.some(v=>v.language.toLowerCase().startsWith(code))){endConversation();setError(`Install an ${code==='ur'?'Urdu':'English'} device voice to hear replies.`);return;}
   if(!voice.current.active||conversationEpoch!==voice.current.epoch)return;
@@ -165,7 +178,7 @@ export default function App() {
  }
  async function interruptReply(){
   if(!voice.current.active||voice.current.processing)return;
-  speech.current.epoch++;await Speech.stop();setSpeechState('Stopped');
+  speech.current.epoch++;voicePlayer.pause();edgeSpeaking.current=false;await Speech.stop();voicePlayer.pause();edgeSpeaking.current=false;setSpeechState('Stopped');
   try{if(recorder.isRecording)await recorder.stop();setRecording(false);voice.current.monitor=false;await startListening();}
   catch{endConversation();setError('Tap to talk again.');}
  }
@@ -202,7 +215,7 @@ export default function App() {
    <View style={s.responseActions}><Pressable accessibilityRole="button" accessibilityLabel={showText?'Hide response text':'Show response text'} onPress={()=>setShowText(x=>!x)} style={s.textToggle}><Text style={s.actionText}>{showText?'Hide text':'Text response'}</Text></Pressable>{voicePhase==='Speaking'&&<Pressable accessibilityRole="button" onPress={interruptReply} style={s.textToggle}><Text style={s.actionText}>Interrupt reply</Text></Pressable>}</View>
    {showText&&<View style={s.card}><Text style={s.question}>Conversation</Text>{answers.length?answers.slice(-3).map((a,i)=><View key={i} style={{gap:8}}><Text style={s.question}>{a.question}</Text><Text selectable style={s.body}>{a.result.answer}</Text></View>):<Text style={s.muted}>Your question and the tutor’s answer will appear here.</Text>}</View>}
    <Text style={s.muted}>Audio is sent through your laptop to Groq. Tap End conversation to stop the microphone.</Text>
-   {answers.length>0&&<View style={s.card}><Text style={s.question}>Last answer · textbook sources</Text>{answers[answers.length-1].result.citations.map(c=><View key={c.id}><Text style={s.muted}>{c.title} · PDF page {c.page}</Text><Button title="Open source page" onPress={()=>Linking.openURL(c.source_url).catch(()=>setError('Cannot open source'))}/></View>)}</View>}
+   {answers.length>0&&<View style={s.card}><Text style={s.question}>Last answer · textbook sources</Text>{answers[answers.length-1].result.citations.map(c=><View key={c.id}><Text style={s.muted}>{c.title} · PDF page {c.page}</Text><Button title="Open source page" onPress={()=>Linking.openURL(c.source_url.startsWith('/')?base+c.source_url:c.source_url).catch(()=>setError('Cannot open source'))}/></View>)}</View>}
 
   </>}
   {screen!=='welcome'&&<Button title="Back" onPress={()=>{setError('');setScreen(previous[screen]);}}/>}

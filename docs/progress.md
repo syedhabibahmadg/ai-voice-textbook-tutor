@@ -13,3 +13,11 @@
 - Other classes and Class 11 Urdu/Farsi/Islamiat are deferred under the user's narrowed scope. Qwen3-4B weights were not downloaded; Ollama fallback remains optional.
 
 Remaining: physical-device echo/interruption evaluation, Urdu speech evaluation, later non-English books/other classes, quizzes/progress and production hardening.
+
+
+## 23 November: supplied local PDFs and Urdu voice
+- Computer/English PDFs in Downloads match indexed sources byte-for-byte. Added supplied Physics and Biology PDFs with local source IDs and PDF citation routes; both indexed with English OCR. Real Groq answers passed for Physics physical quantities (PDF5) and Biology homeostasis (PDF51).
+- Added Edge TTS Urdu playback with exact ur-PK-AsadNeural voice. Real Urdu audio sample generated (70,416 bytes). Urdu questions use the Urdu STT hint; the tutoring prompt requests easy Urdu script suitable for a child. Other response languages retain device speech.
+- Audio rendering has bounded concurrency, timeout and a bounded ten-minute memory cache. Urdu audio uses the server URL rather than requiring an installed device Urdu voice.
+- Supplied exact quote hints reduce OCR-induced citation validation failures without accepting invented source IDs or altered quote words.
+- APK version 0.1.1 / Android version code 2. Physical-phone Edge playback and speaker interruption still require device evaluation.

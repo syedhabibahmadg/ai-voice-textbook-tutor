@@ -1,4 +1,6 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from .catalog import books, search
@@ -65,7 +67,7 @@ def retrieve(q: Question):
             if keywords: hits=search(keywords,q.textbook,q.chapter)
     except Exception:
         raise HTTPException(503, 'Retrieval provider unavailable. Check the local index and configured model.')
-    return {'passages': [{**h, 'grade':book['grade'], 'subject':book['subject'], 'title': book['title'], 'source_url': f"https://drive.google.com/file/d/{q.textbook}/view#page={h['page']}"} for h in hits], 'mode': 'semantic' if os.getenv('TUTOR_EMBED_MODEL') else 'lexical'}
+    return {'passages': [{**h, 'grade':book['grade'], 'subject':book['subject'], 'title': book['title'], 'source_url': (f"/api/v1/textbooks/{q.textbook}/pdf#page={h['page']}" if book.get("source_type")=="local_pdf" else f"https://drive.google.com/file/d/{q.textbook}/view#page={h['page']}")} for h in hits], 'mode': 'semantic' if os.getenv('TUTOR_EMBED_MODEL') else 'lexical'}
 
 @app.post('/api/v1/chat')
 def chat(q: Question):
@@ -84,3 +86,11 @@ def provider_status(check: bool = False):
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+@app.get('/api/v1/textbooks/{book_id}/pdf')
+def local_pdf(book_id: str):
+    if not any(b['id']==book_id for b in books()):raise HTTPException(404,'Book not found')
+    from rag.ingest import ROOT
+    path=ROOT/'data/raw'/(book_id+'.pdf')
+    if not path.is_file():raise HTTPException(404,'PDF unavailable')
+    return FileResponse(path,media_type='application/pdf')

@@ -6,3 +6,4 @@ PyMuPDF>=1.24,<2
 groq>=0.37,<1
 python-dotenv>=1,<2
 python-multipart>=0.0.18,<1
+edge-tts>=7,<8

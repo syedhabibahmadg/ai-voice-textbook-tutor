@@ -368,5 +368,29 @@
     "page_count": null,
     "status": "awaiting_download",
     "size": 18061599
+  },
+  {
+    "id": "local-653972b8e112d31ecbf20a2e",
+    "grade": 11,
+    "subject": "Physics",
+    "title": "New 11 Physics EM Full Book Punjab 2025.pdf",
+    "size": 47429142,
+    "status": "indexed",
+    "source_type": "local_pdf",
+    "page_count": 276,
+    "chunk_count": 737,
+    "chapter_mapping": "inferred_needs_review"
+  },
+  {
+    "id": "local-d7edb062ff1dd2ec251edb58",
+    "grade": 11,
+    "subject": "Biology",
+    "title": "11th Class Biology Punjab Board New Syllabus Full Book PDF.pdf",
+    "size": 29129173,
+    "status": "indexed",
+    "source_type": "local_pdf",
+    "page_count": 282,
+    "chunk_count": 672,
+    "chapter_mapping": "inferred_needs_review"
   }
 ]

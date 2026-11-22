@@ -2,12 +2,20 @@
   "expo": {
     "name": "AI Voice Textbook Tutor",
     "slug": "ai-voice-textbook-tutor",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "plugins": [["expo-audio", {"microphonePermission": "Allow Textbook Tutor to record a question on this device."}]],
+    "plugins": [
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow Textbook Tutor to record a question on this device."
+        }
+      ]
+    ],
     "android": {
-      "package": "com.gillanigames.voicetextbooktutor"
+      "package": "com.gillanigames.voicetextbooktutor",
+      "versionCode": 2
     }
   }
 }

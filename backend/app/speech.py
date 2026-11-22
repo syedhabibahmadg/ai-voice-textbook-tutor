@@ -65,6 +65,42 @@ def transcribe(file: UploadFile=File(...), language: str=Form('auto'), start_sec
         file.file.close()
         GATE.release()
 
+from pydantic import BaseModel, Field
+from fastapi.responses import Response
+import asyncio
+import hashlib
+import time
+
+class Synthesis(BaseModel):
+    text: str=Field(min_length=1,max_length=6000)
+
+_AUDIO={}
+_TTS_GATE=asyncio.Semaphore(2)
+
 @router.post('/synthesize')
-def synthesize():
-    raise HTTPException(501,'Use device text-to-speech; no backend TTS provider is configured.')
+async def synthesize(q:Synthesis):
+    import edge_tts
+    key=hashlib.sha256(q.text.encode()).hexdigest()
+    now=time.monotonic()
+    for old in list(_AUDIO):
+        if now-_AUDIO[old][0]>600:del _AUDIO[old]
+    if key not in _AUDIO:
+        try:
+            async with _TTS_GATE:
+                async def render():
+                    result=bytearray()
+                    async for part in edge_tts.Communicate(q.text,'ur-PK-AsadNeural',rate='-5%').stream():
+                        if part['type']=='audio':result.extend(part['data'])
+                    if not result:raise ValueError('No audio')
+                    return bytes(result)
+                audio=await asyncio.wait_for(render(),timeout=25)
+            if len(_AUDIO)>=24:_AUDIO.pop(next(iter(_AUDIO)))
+            _AUDIO[key]=(now,audio)
+        except Exception:raise HTTPException(503,'Urdu voice service unavailable. Retry; the text answer is available.')
+    return {'audio_url':'/api/v1/speech/audio/'+key,'voice':'ur-PK-AsadNeural'}
+
+@router.get('/audio/{key}')
+def voice_audio(key:str):
+    item=_AUDIO.get(key)
+    if not item or time.monotonic()-item[0]>600:raise HTTPException(404,'Audio expired')
+    return Response(item[1],media_type='audio/mpeg',headers={'Cache-Control':'private, max-age=300'})
