@@ -31,3 +31,10 @@ Remaining: physical-device echo/interruption evaluation, Urdu speech evaluation,
 - Bilingual testing found and fixed Urdu query transliteration gaps and harmless capitalization mismatches in source quotes. Changed factual words and invented source IDs remain rejected. Live Groq testing is paced to respect provider rate limits; final bilingual results are recorded locally in outputs/Chapter-mapping-tests.json.
 
 - Final live bilingual matrix completed: 24 real Groq responses passed, covering English and Urdu in chapter and whole-book mode across all six books. Rate-limited requests were retried with pacing; no fallback was counted as a generated-answer pass.
+
+
+## Chapter selection compatibility correction
+- Fixed a response-contract regression: the shipped APK distinguishes books from chapters using the presence of `title`. Reviewed chapter responses now use `chapter_title`, restoring enabled chapter cards in existing installs. Future mobile code detects chapter page fields first and restricts indexing-based disabling to textbook lists.
+- Added an API regression test covering the reviewed chapter payload and a chapter-filtered cited answer. Backend: 16 tests passed; mobile TypeScript passed.
+- Running-server checks: Chemistry Chapter 1 returned generated evidence on PDF12; Biology Chapter 1 returned generated evidence on PDF4/8. Both responses use the same chapter ID selected from the live catalog and preserve chapter-range isolation. No connected emulator/phone was available for physical tap testing.
+- Existing app users should leave/re-enter the book or restart the app to discard the stale disabled chapter list; no APK replacement is required for the server compatibility fix.

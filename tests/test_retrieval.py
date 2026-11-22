@@ -81,3 +81,18 @@ def test_reviewed_class11_catalog_ranges_are_complete_and_valid():
         assert len(starts)==count and starts==sorted(set(starts))
         assert 1<=starts[0]<=starts[-1]<=book.get('chapter_end',book['page_count'])<=book['page_count']
         if book.get('chapter_titles'):assert len(book['chapter_titles'])==count
+
+
+def test_reviewed_chapters_remain_clickable_in_shipped_mobile_client(corpus):
+    client,books=corpus
+    book=next(b for b in books if b['grade']==11 and b['subject']=='Chemistry')
+    with ingest.connect() as db:
+        row=db.execute('SELECT metadata FROM books WHERE id=?',(book['id'],)).fetchone()
+        metadata=json.loads(row[0]);metadata.update(chapter_starts=[1],chapter_titles=['Periodic Properties'],chapter_end=1)
+        db.execute('UPDATE books SET metadata=? WHERE id=?',(json.dumps(metadata),book['id']))
+    chapters=client.get('/api/v1/chapters',params={'textbook':book['id']}).json()
+    assert chapters==[{'id':'1','chapter_title':'Periodic Properties','page_start':1,'page_end':1}]
+    # The shipped APK treats objects containing title as disabled textbook cards.
+    assert all('title' not in chapter for chapter in chapters)
+    answer=client.post('/api/v1/chat',json={'grade':11,'subject':'Chemistry','textbook':book['id'],'chapter':chapters[0]['id'],'query':'What is ionization energy?'}).json()
+    assert answer['grounded'] and answer['citations'][0]['chapter']=='1'

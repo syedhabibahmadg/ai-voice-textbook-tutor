@@ -9,7 +9,7 @@ function Button({title,onPress,disabled=false}:{title:string;onPress:()=>void;di
  return <Pressable accessibilityRole="button" accessibilityState={{disabled}} accessibilityLabel={title} disabled={disabled} onPress={onPress} style={({pressed})=>[s.action,disabled&&s.actionDisabled,pressed&&!disabled&&s.actionPressed]}><Text style={[s.actionText,disabled&&s.actionTextDisabled]}>{title}</Text></Pressable>;
 }
 type Book = { id: string; title: string; status: string; chunk_count?: number };
-type Chapter = { id: string; page_start: number; page_end: number };
+type Chapter = { chapter_title?:string; id: string; page_start: number; page_end: number };
 type Citation = { id: string; title: string; page: number; source_url: string };
 type Answer = { answer: string; grounded: boolean; citations: Citation[]; provider:string; model?:string; mode:string };
 type Screen = 'welcome' | 'grade' | 'subject' | 'book' | 'chapter' | 'chat' | 'settings';
@@ -195,8 +195,8 @@ export default function App() {
   {screen==='chapter'&&<View style={s.studyCard}><Text style={s.voiceEyebrow}>THE WHOLE TEXTBOOK</Text><Text style={s.voiceTitle}>A question can come from anywhere.</Text><Text style={s.voiceHint}>Talk about any topic in {subject}. Your tutor searches this book and shows the source page.</Text><Button title="Talk about the whole book" disabled={!book?.chunk_count} onPress={()=>{setChapter(undefined);setAnswers([]);setScreen('chat');}}/></View>}
   {screen==='chapter'&&<Text style={s.question}>Or focus on a chapter</Text>}
   {['grade','subject','book','chapter'].includes(screen) && <>{items.map(item=>{
-   const label=typeof item==='object'?('title' in item?`${item.title.replace(/\.pdf$/i,'')} · ${item.chunk_count ? 'Ready to talk' : 'Preparing textbook'}`:`Chapter ${item.id} · PDF pp. ${item.page_start}–${item.page_end}`):String(item);
-   return <View style={s.card} key={typeof item==='object'?item.id:item}><Button title={label} disabled={typeof item==='object'&&'title' in item&&!item.chunk_count} onPress={()=>{
+   const label=typeof item==='object'?('page_start' in item?`Chapter ${item.id} · PDF pp. ${item.page_start}–${item.page_end}`:'title' in item?`${item.title.replace(/\.pdf$/i,'')} · ${item.chunk_count ? 'Ready to talk' : 'Preparing textbook'}`:'Unavailable item'):String(item);
+   return <View style={s.card} key={typeof item==='object'?item.id:item}><Button title={label} disabled={screen==='book'&&typeof item==='object'&&'title' in item&&!item.chunk_count} onPress={()=>{
     setError('');if(screen==='grade'){setGrade(item as number);setSubject('');setBook(undefined);setChapter(undefined);setScreen('subject');}
     if(screen==='subject'){setSubject(item as string);setBook(undefined);setChapter(undefined);setScreen('book');}
     if(screen==='book'){setBook(item as Book);setChapter(undefined);setScreen('chapter');}
