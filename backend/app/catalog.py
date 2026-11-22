@@ -13,8 +13,10 @@ def books():
         indexed = {r['id']: json.loads(r['metadata']) for r in db.execute('SELECT * FROM books')}
     return [indexed.get(b['id'], b) for b in json.loads(MANIFEST.read_text(encoding='utf8'))]
 
-STOP = set('what is are the a an of in explain how why does do and to it kya hai hain ka ki ke ko mujhe samjhao tell me about please can you could would i want know understand give describe definition define briefly detail details with example examples from this that book textbook chapter according hota hoti hote kis kise kon sa se tha thi they their was were who which for on as at by be its meaning means difference between کیا ہے ہیں کیسے بتائیں کے بارے میں ہوتا ہوتی ہوتے ہو مجھے سمجھاؤ ذرا آسان لفظوں'.split())
+STOP = set('what is are the a an of in explain how why does do and to it kya hai hain ka ki ke ko mujhe samjhao tell me about please can you could would i want know understand give describe definition define briefly detail details with example examples from this that book textbook chapter according hota hoti hote kis kise kon sa se tha thi they their was were who which for on as at by be its meaning means difference between کیا ہے ہیں کیسے بتائیں کے بارے میں ہوتا ہوتی ہوتے ہو مجھے سمجھاؤ ذرا آسان لفظوں کس کون ہوئی'.split())
 ALIASES = {'کمپیوٹر':'computer','ہارڈویئر':'hardware','سافٹویئر':'software','میموری':'memory','الگورتھم':'algorithm','آکسیجن':'oxygen','ہائیڈروجن':'hydrogen','توانائی':'energy','ایٹم':'atom','کیمیائی':'chemical'}
+
+ALIASES.update({'حضرت':'Hazrat','محمد':'Muhammad','پیدائش':'birth','شہر':'city','سافٹ ویئر':'software','ڈیولپمنٹ':'development','مختلط عدد':'complex number','طبعی مقدار':'physical quantity','زندگی':'life','تین':'three','ڈومین':'domain'})
 
 def stem(word):
     if len(word)>5 and word.endswith('ies'): return word[:-3]+'y'

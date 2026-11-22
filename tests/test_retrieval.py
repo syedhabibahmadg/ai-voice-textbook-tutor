@@ -59,3 +59,25 @@ def test_conversational_whole_book_question(corpus):
     book = next(b for b in books if b['grade'] == 11 and b['subject'] == 'Chemistry')
     result = client.post('/api/v1/chat', json={'grade':11,'subject':'Chemistry','textbook':book['id'],'chapter':None,'query':'Can you please tell me about ionization energy?'}).json()
     assert result['grounded'] and result['citations'][0]['page'] == 1
+
+
+def test_reviewed_chapter_ranges_override_mentions_and_separate_backmatter(tmp_path,monkeypatch):
+    monkeypatch.delenv('TUTOR_OCR_LANG',raising=False)
+    path=tmp_path/'mapped.pdf'
+    doc=fitz.open()
+    for text in ['Chapter 1 Introductory concepts and their detailed explanation.','Chapter 9 is referenced here but this page still belongs to chapter one.','Chapter 2 Second chapter concepts and detailed explanation.','Answers for all chapters and additional reference material.']:
+        page=doc.new_page();page.insert_text((72,72),text)
+    doc.save(path);doc.close()
+    pages,_,_=ingest.extract(path,{'chapter_starts':[1,3],'chapter_end':3})
+    assert [p[1] for p in pages]==['1','1','2','backmatter']
+
+
+def test_reviewed_class11_catalog_ranges_are_complete_and_valid():
+    books=json.loads(ingest.MANIFEST.read_text(encoding='utf-8'))
+    expected={'Biology':12,'Computer':9,'English':14,'Physics':12,'Math':14,'Chemistry':16}
+    for subject,count in expected.items():
+        book=next(b for b in books if b['grade']==11 and b['subject']==subject)
+        starts=book['chapter_starts']
+        assert len(starts)==count and starts==sorted(set(starts))
+        assert 1<=starts[0]<=starts[-1]<=book.get('chapter_end',book['page_count'])<=book['page_count']
+        if book.get('chapter_titles'):assert len(book['chapter_titles'])==count

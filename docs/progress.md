@@ -21,3 +21,13 @@ Remaining: physical-device echo/interruption evaluation, Urdu speech evaluation,
 - Audio rendering has bounded concurrency, timeout and a bounded ten-minute memory cache. Urdu audio uses the server URL rather than requiring an installed device Urdu voice.
 - Supplied exact quote hints reduce OCR-induced citation validation failures without accepting invented source IDs or altered quote words.
 - APK version 0.1.1 / Android version code 2. Physical-phone Edge playback and speaker interruption still require device evaluation.
+
+
+## Reviewed Class 11 chapter organization — 23 November
+- Reviewed actual contents and chapter-opening pages in cached PDF/OCR text for all six indexed books. Biology 12 chapters; Computer 9; English 14; Physics 12; Mathematics 14; Chemistry 16.
+- Explicit boundaries are now authoritative. A later mention of another chapter cannot overwrite the assigned chapter. Front matter is omitted from chapter cards; Math answers (PDF294–312) and Physics bibliography (PDF276) remain separate from the final chapter. Whole-book retrieval still spans the selected book.
+- Chapter API returns sequential IDs, exact PDF ranges and available chapter titles. Existing APKs use these server-supplied ranges without requiring an update. Re-enter the book to refresh its list.
+- Running-server chapter-list checks passed for all six books. All 77 chapters passed first/last content retrieval and strict book/chapter/page-range isolation checks. Regression suite: 15 tests passed.
+- Bilingual testing found and fixed Urdu query transliteration gaps and harmless capitalization mismatches in source quotes. Changed factual words and invented source IDs remain rejected. Live Groq testing is paced to respect provider rate limits; final bilingual results are recorded locally in outputs/Chapter-mapping-tests.json.
+
+- Final live bilingual matrix completed: 24 real Groq responses passed, covering English and Urdu in chapter and whole-book mode across all six books. Rate-limited requests were retried with pacing; no fallback was counted as a generated-answer pass.

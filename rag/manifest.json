@@ -278,7 +278,40 @@
     "modified": "2026-11-11T11:12:37.891Z",
     "size": 44302925,
     "chunk_count": 412,
-    "chapter_mapping": "inferred_needs_review"
+    "chapter_mapping": "reviewed",
+    "chapter_starts": [
+      5,
+      17,
+      29,
+      46,
+      60,
+      79,
+      86,
+      99,
+      109,
+      118,
+      128,
+      135,
+      143,
+      148
+    ],
+    "chapter_titles": [
+      "Khatam-un-Nabiyeen Hazrat Muhammad",
+      "Responsibility of the Youth in Nation-Building",
+      "A Bird Came Down the Walk",
+      "Team Moon",
+      "Impact of Global Warming on Pakistan",
+      "The Echoing Green",
+      "What You Do is What You Are",
+      "Clean Water",
+      "Freedom",
+      "The Punishment of Shahpesh, the Persian, on Khipil, the Builder",
+      "Those Winter Sundays",
+      "The Impact of AI on Society, Human Relationships, and Ethics",
+      "Rubaiyat",
+      "The End of the Beginning"
+    ],
+    "chapter_end": 168
   },
   {
     "id": "1Yp1se_CpTDfg4cYoQ3gbASnKjHc2KT0j",
@@ -333,7 +366,40 @@
     "modified": "2026-11-11T11:12:10.883Z",
     "size": 28416666,
     "chunk_count": 603,
-    "chapter_mapping": "inferred_needs_review"
+    "chapter_mapping": "reviewed",
+    "chapter_starts": [
+      4,
+      25,
+      37,
+      47,
+      81,
+      91,
+      126,
+      143,
+      172,
+      180,
+      203,
+      221,
+      240,
+      261
+    ],
+    "chapter_titles": [
+      "Complex Numbers",
+      "Functions and Graphs",
+      "Theory of Quadratic Functions",
+      "Matrices and Determinants",
+      "Partial Fractions",
+      "Sequences and Series",
+      "Permutations and Combinations",
+      "Mathematical Induction and Binomial Theorem",
+      "Division of Polynomials",
+      "Trigonometric Identities",
+      "Trigonometric Functions and Their Graphs",
+      "Limit and Continuity",
+      "Differentiation",
+      "Vectors in Space"
+    ],
+    "chapter_end": 293
   },
   {
     "id": "1L7T674ss-3N7HqwxAKOshLdrzX8_uABQ",
@@ -357,7 +423,30 @@
     "modified": "2026-11-11T11:11:54.392Z",
     "size": 45862599,
     "chunk_count": 343,
-    "chapter_mapping": "inferred_needs_review"
+    "chapter_mapping": "reviewed",
+    "chapter_starts": [
+      4,
+      23,
+      44,
+      59,
+      70,
+      89,
+      104,
+      118,
+      128
+    ],
+    "chapter_titles": [
+      "Introduction to Software Development",
+      "Python Programming",
+      "Algorithms and Problem Solving",
+      "Computational Structures",
+      "Data Analytics",
+      "Emerging Technologies",
+      "Legal and Ethical Aspects of Computing Systems",
+      "Online Research and Digital Literacy",
+      "Entrepreneurship in the Digital Age"
+    ],
+    "chapter_end": 144
   },
   {
     "id": "1fBpxOt7Uo-DENMw4S76LaBpoCD3-bO1R",
@@ -379,7 +468,36 @@
     "source_type": "local_pdf",
     "page_count": 276,
     "chunk_count": 737,
-    "chapter_mapping": "inferred_needs_review"
+    "chapter_mapping": "reviewed",
+    "chapter_starts": [
+      4,
+      22,
+      51,
+      72,
+      90,
+      115,
+      135,
+      170,
+      188,
+      225,
+      247,
+      257
+    ],
+    "chapter_titles": [
+      "Measurements",
+      "Force and Motion",
+      "Circular and Rotational Motion",
+      "Work, Energy and Power",
+      "Solids and Fluid Dynamics",
+      "Heat and Thermodynamics",
+      "Waves and Vibrations",
+      "Physical Optics and Gravitational Waves",
+      "Electrostatics and Current Electricity",
+      "Electromagnetism",
+      "Special Theory of Relativity",
+      "Nuclear and Particle Physics"
+    ],
+    "chapter_end": 275
   },
   {
     "id": "local-d7edb062ff1dd2ec251edb58",
@@ -391,6 +509,35 @@
     "source_type": "local_pdf",
     "page_count": 282,
     "chunk_count": 672,
-    "chapter_mapping": "inferred_needs_review"
+    "chapter_mapping": "reviewed",
+    "chapter_starts": [
+      4,
+      36,
+      51,
+      94,
+      130,
+      143,
+      170,
+      180,
+      205,
+      218,
+      234,
+      258
+    ],
+    "chapter_titles": [
+      "Biodiversity and Classification",
+      "Bacteria and Viruses",
+      "Cells and Subcellular Organelles",
+      "Biomolecules",
+      "Enzymes",
+      "Bioenergetics",
+      "Structural and Computational Biology",
+      "Plant Physiology",
+      "Human Digestive System",
+      "Human Respiratory System",
+      "Human Circulatory System",
+      "Human Skeletal and Muscular Systems"
+    ],
+    "chapter_end": 282
   }
 ]

@@ -35,8 +35,12 @@ def textbooks(grade: int, subject: str):
 def chapters(textbook: str):
     if not any(b['id'] == textbook for b in books()):
         raise HTTPException(404, 'Textbook not found')
+    book=next(b for b in books() if b['id']==textbook)
+    if book.get('chapter_starts'):
+        starts=book['chapter_starts'];end=book.get('chapter_end') or book['page_count']
+        return [{'id':str(i+1),'title':(book.get('chapter_titles') or ['']*len(starts))[i],'page_start':start,'page_end':starts[i+1]-1 if i+1<len(starts) else end} for i,start in enumerate(starts)]
     with closing(connect()) as db:
-        result = [dict(r) for r in db.execute('SELECT chapter AS id, MIN(page) AS page_start, MAX(page) AS page_end FROM chunks WHERE book_id=? GROUP BY chapter', (textbook,))]
+        result = [dict(r) for r in db.execute('SELECT chapter AS id, MIN(page) AS page_start, MAX(page) AS page_end FROM chunks WHERE book_id=? AND chapter NOT IN ("unassigned","backmatter") GROUP BY chapter', (textbook,))]
     return sorted(result, key=lambda ch: (not ch['id'].isdigit(), int(ch['id']) if ch['id'].isdigit() else ch['id']))
 
 class Question(BaseModel):

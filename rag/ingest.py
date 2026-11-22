@@ -49,12 +49,13 @@ def extract(path, book):
             if start == number:
                 chapter = ch
         match = re.search(r'(?im)^\s*(?:chapter|unit)\s+(\d+)\b', text)
-        if match:
+        if match and not book.get('chapter_starts'):
             chapter = match.group(1)
         if not toc and not match:
             section = re.search(r'(?m)^\s*(\d{1,2})\.\d+(?:\.\d+)?\s+[A-Z][A-Z ]{4,}', text)
             if section:
                 chapter = section.group(1)
+        if book.get('chapter_end') and number>book['chapter_end']:chapter='backmatter'
         lines = [line.strip() for line in text.splitlines() if not re.fullmatch(r'\s*\d+\s*', line) and not re.search(r'Web version of PECTAA|Not for Sale|www\.taleem360\.com', line)]
         pages.append((number, chapter, '\n'.join(lines)))
     count = len(doc)
