@@ -1,3 +1,5 @@
+import Home from './Home';
+import {StatusBar} from 'expo-status-bar';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Linking, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorderState, useAudioRecorder, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
@@ -183,12 +185,13 @@ export default function App() {
   catch{endConversation();setError('Tap to talk again.');}
  }
  const previous:Record<Screen,Screen>={welcome:'welcome',grade:'welcome',subject:'grade',book:'subject',chapter:'book',chat:'chapter',settings:settingsReturn.current};
- return <SafeAreaView style={s.root}><ScrollView ref={scroll} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-  <View style={s.top}><Text style={s.brand}>TEXTBOOK / TUTOR</Text><Button title="Settings" onPress={openSettings}/></View>
+ return <SafeAreaView style={[s.root,screen==='welcome'&&{backgroundColor:'#f6f5f0'}]}><StatusBar style="dark"/><ScrollView ref={scroll} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+  {screen!=='welcome'&&<>  <View style={s.top}><Text style={s.brand}>TEXTBOOK / TUTOR</Text><Button title="Settings" onPress={openSettings}/></View>
   <Text accessibilityLiveRegion="polite" style={s.muted}>{aiLabel}</Text>
-  <Text style={s.heading}>{screen==='welcome'?'Understand your textbook. One question at a time.':screen==='chat'?'Let’s learn together':screen==='chapter'?'Your study space':screen==='grade'?'Choose your class':screen==='subject'?'Explore subjects':screen==='book'?'Your textbooks':'Settings'}</Text>
+  <Text style={s.heading}>{screen==='chat'?'Let’s learn together':screen==='chapter'?'Your study space':screen==='grade'?'Choose your class':screen==='subject'?'Explore subjects':screen==='book'?'Your textbooks':'Settings'}</Text>
+</>}
   {!!grade && screen!=='welcome' && <Text style={s.muted}>Class {grade} · {subject} {chapter?`· Chapter ${chapter.id}`:book?'· Whole book':''}</Text>}
-  {screen==='welcome' && <><Text style={s.body}>Ask questions from available textbooks and verify the original PDF page. Choose your chapter, tap once, and talk with your tutor.</Text><Text style={s.muted}>{base || 'First, connect to your laptop server in Settings.'}</Text><Button title={base?'Start learning':'Connect to server'} disabled={!storageReady} onPress={()=>setScreen(base?'grade':'settings')}/></>}
+  {screen==='welcome'&&<Home base={base} ready={storageReady} onSettings={openSettings} onStart={()=>setScreen('grade')} onSubject={(chosen,level)=>{setGrade(level);setSubject(chosen);setBook(undefined);setChapter(undefined);setError('');setScreen('book');}}/>}
   {screen==='settings' && <><View style={s.card}><Text style={s.question}>Tutor language</Text><Text style={s.muted}>Choose how your tutor replies. Saved on this phone.</Text>{['English','Urdu','Roman Urdu'].map(l=><Pressable key={l} accessibilityRole="radio" accessibilityState={{checked:language===l}} accessibilityLabel={l} style={[s.languageOption,language===l&&s.languageSelected]} onPress={async()=>{setLanguage(l);try{await AsyncStorage.setItem('tutor.language.v1',l);}catch{setError('Could not save language preference.');}}}><Text style={s.body}>{l}</Text><Text style={s.question}>{language===l?'✓':'○'}</Text></Pressable>)}</View><Text style={s.body}>Server Connection Settings</Text><Text style={s.muted}>Start start_server.bat on your laptop, then enter its displayed URL. Use the same trusted Wi-Fi.</Text><TextInput accessibilityLabel="Server URL" placeholder="http://192.168.1.5:8000" style={s.input} value={serverDraft} onChangeText={setServerDraft} autoCapitalize="none" autoCorrect={false} keyboardType="url"/><Text accessibilityLiveRegion="polite" style={s.muted}>{connection}</Text><Button title="Test connection and save" disabled={busy} onPress={connectServer}/><Button title="Reconnect saved server" disabled={busy||!base} onPress={async()=>{setBusy(true);setError('');try{const health=await api('/health');if(health.status!=='ok')throw new Error('Unexpected health response');}catch(e){setError((e as Error).message);}finally{setBusy(false);}}}/><Text style={s.muted}>The address is stored only on this device. Transcription sends recorded audio through your laptop to Groq. Device speech output requires an installed compatible voice.</Text></>}
   {busy && <ActivityIndicator accessibilityLabel="Loading"/>}
   {!!error && <View style={s.card}><Text accessibilityRole="alert" style={s.error}>{error}</Text><Button title="Server settings" onPress={()=>{setError('');setScreen('settings');}}/></View>}

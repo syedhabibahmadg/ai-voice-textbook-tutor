@@ -41,7 +41,7 @@ def extract(path, book):
             for index,text in pool.map(_ocr_page,tasks):raw[index]=text
     toc = [(page, str(number)) for number, (_, title, page) in enumerate(doc.get_toc(), 1)]
     if book.get('chapter_starts'):
-        toc = [(page, str(i)) for i, page in enumerate(book['chapter_starts'], 1)]
+        toc = [(page, str((book.get('chapter_ids') or list(range(1,len(book['chapter_starts'])+1)))[i])) for i,page in enumerate(book['chapter_starts'])]
     chapter = 'unassigned'
     for number, page in enumerate(doc, 1):
         text = raw[number-1]

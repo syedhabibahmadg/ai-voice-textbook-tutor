@@ -38,3 +38,11 @@ Remaining: physical-device echo/interruption evaluation, Urdu speech evaluation,
 - Added an API regression test covering the reviewed chapter payload and a chapter-filtered cited answer. Backend: 16 tests passed; mobile TypeScript passed.
 - Running-server checks: Chemistry Chapter 1 returned generated evidence on PDF12; Biology Chapter 1 returned generated evidence on PDF4/8. Both responses use the same chapter ID selected from the live catalog and preserve chapter-range isolation. No connected emulator/phone was available for physical tap testing.
 - Existing app users should leave/re-enter the book or restart the app to discard the stale disabled chapter list; no APK replacement is required for the server compatibility fix.
+
+
+## Class 12 supplied textbooks — 23 November
+- Imported all five supplied Downloads PDFs by content hash, replacing the old Class 12 catalog entries for those subjects. Original files were preserved. New sources use local PDF citation URLs rather than invented Drive references.
+- Chemistry 266 pages/679 chunks/17 chapters; Biology 252/584/13; Computer 147/347/9; Physics 186/478/9; English 165/520/13. Total 1,016 pages, 2,608 chunks, 61 reviewed chapters. Printed continuing chapter IDs are preserved where applicable.
+- Reviewed actual chapter-opening text rather than relying on outdated contents page offsets or per-page PDF bookmarks. Computer model papers after PDF140, Chemistry after PDF261 and English after PDF159 are separated from teaching chapters.
+- All 61 chapters passed first/last meaningful-content retrieval with book/chapter/page-range isolation. TypeScript and existing backend regression checks passed.
+- New home source adds Class 11/Class 12 tabs and ready-book shortcuts. The final rebuild and paid live generation matrix were not executed: automatic permission review timed out twice. Existing installed APK users can use Start learning -> Class 12 after the backend catalog activation. No new live-answer or new-build success is claimed for this checkpoint.

@@ -79,7 +79,7 @@ def main():
     run(['cmd','/c',gradle_command,'assembleRelease','--no-daemon','--console=plain','--max-workers=2',
          '-PreactNativeArchitectures=arm64-v8a,armeabi-v7a,x86_64'],cwd=build_mobile / 'android',env=env)
     source = build_mobile / 'android/app/build/outputs/apk/release/app-release.apk'
-    destination = Path(os.getenv('TUTOR_APK_OUTPUT', str(ROOT.parent / 'outputs'))) / 'AI-Voice-Textbook-Tutor-v0.1.1.apk'
+    destination = Path(os.getenv('TUTOR_APK_OUTPUT', str(ROOT.parent / 'outputs'))) / 'AI-Voice-Textbook-Tutor-v0.1.2.apk'
     destination.parent.mkdir(parents=True,exist_ok=True)
     shutil.copy2(source,destination)
     print(f'APK: {destination} ({destination.stat().st_size} bytes)',flush=True)

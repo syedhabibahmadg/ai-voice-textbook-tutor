@@ -96,3 +96,15 @@ def test_reviewed_chapters_remain_clickable_in_shipped_mobile_client(corpus):
     assert all('title' not in chapter for chapter in chapters)
     answer=client.post('/api/v1/chat',json={'grade':11,'subject':'Chemistry','textbook':book['id'],'chapter':chapters[0]['id'],'query':'What is ionization energy?'}).json()
     assert answer['grounded'] and answer['citations'][0]['chapter']=='1'
+
+
+def test_supplied_class12_books_have_reviewed_chapter_metadata():
+    books=json.loads(ingest.MANIFEST.read_text(encoding='utf-8'))
+    expected={'Chemistry':17,'Biology':13,'Computer':9,'Physics':9,'English':13}
+    for subject,count in expected.items():
+        b=next(b for b in books if b['grade']==12 and b['subject']==subject)
+        assert b['source_type']=='local_pdf' and b['chunk_count']>0
+        assert len(b['chapter_starts'])==len(b['chapter_ids'])==len(b['chapter_titles'])==count
+        assert b['chapter_starts']==sorted(set(b['chapter_starts']))
+        assert b['chapter_ids']==sorted(set(b['chapter_ids']))
+        assert b['chapter_starts'][-1]<=b['chapter_end']<=b['page_count']
